@@ -56,6 +56,12 @@ class QuestionDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_question_detail)
 
+        // ログイン済みのユーザーを取得する
+        val user = FirebaseAuth.getInstance().currentUser
+
+        // Firebase Databaseの参照
+        val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().reference
+
         // 渡ってきたQuestionのオブジェクトを保持する
         val extras = intent.extras
         mQuestion = extras.get("question") as Question
@@ -68,9 +74,6 @@ class QuestionDetailActivity : AppCompatActivity() {
         mAdapter.notifyDataSetChanged()
 
         fab.setOnClickListener {
-            // ログイン済みのユーザーを取得する
-            val user = FirebaseAuth.getInstance().currentUser
-
             if (user == null) {
                 // ログインしていなければログイン画面に遷移させる
                 val intent = Intent(applicationContext, LoginActivity::class.java)
@@ -83,9 +86,9 @@ class QuestionDetailActivity : AppCompatActivity() {
             }
         }
 
-        val databaseReference = FirebaseDatabase.getInstance().reference
         mAnswerRef = databaseReference.child(ContentsPATH).child(mQuestion.genre.toString())
             .child(mQuestion.questionUid).child(AnswersPATH)
         mAnswerRef.addChildEventListener(mEventListener)
     }
+
 }

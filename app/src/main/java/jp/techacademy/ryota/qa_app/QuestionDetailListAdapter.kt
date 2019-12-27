@@ -7,8 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class QuestionDetailListAdapter(context: Context, private val mQuestion: Question) : BaseAdapter() {
     companion object {
@@ -71,6 +77,8 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
                 val imageView = convertView.findViewById<View>(R.id.imageView) as ImageView
                 imageView.setImageBitmap(image)
             }
+
+            setFavButtonVisibility(convertView)
         } else {
             if (convertView == null) {
                 convertView = mLayoutInflater!!.inflate(R.layout.list_answer, parent, false)!!
@@ -88,5 +96,45 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
         }
 
         return convertView
+    }
+
+    private fun setFavButtonVisibility(convertView: View) {
+        val user = FirebaseAuth.getInstance().currentUser
+        val favButton = convertView.findViewById<View>(R.id.favButton) as ImageButton
+
+        if (user == null) {
+            favButton.visibility = View.GONE
+        } else {
+            favButton.visibility = View.VISIBLE
+
+            val favoriteRef =
+                FirebaseDatabase.getInstance().reference.child(FavoritesPATH).child(user.uid)
+
+            favoriteRef.child(mQuestion.questionUid).addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val favoriteState = dataSnapshot.child("is_favorite").value
+                    val data = HashMap<String, Boolean>()
+
+                    when (favoriteState) {
+                        null, false -> {
+                            favButton.setImageResource(R.drawable.not_favorite)
+                            data["is_favorite"] = true
+                        }
+
+                        true -> {
+                            favButton.setImageResource(R.drawable.favorite)
+                            data["is_favorite"] = false
+                        }
+                    }
+
+                    favButton.setOnClickListener {
+                        favoriteRef.child(mQuestion.questionUid).setValue(data)
+                    }
+                }
+
+                override fun onCancelled(dataSnapshot: DatabaseError) {
+                }
+            })
+        }
     }
 }

@@ -105,6 +105,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mToolbar = findViewById(R.id.toolbar)
         setSupportActionBar(mToolbar)
 
+        // ログイン済みのユーザーを取得する
+        val user = FirebaseAuth.getInstance().currentUser
+
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener { view ->
             // ジャンルを選択していない場合(mGenre == 0)はエラーを表示するだけ
@@ -113,9 +116,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } else {
 
             }
-
-            // ログイン済みのユーザーを取得する
-            val user = FirebaseAuth.getInstance().currentUser
 
             if (user == null) {
                 // ログインしていなければログイン画面に遷移させる
@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         val toggle =
             ActionBarDrawerToggle(this, drawer, mToolbar, R.string.app_name, R.string.app_name)
+
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
@@ -206,6 +207,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 mToolbar.title = "コンピューター"
                 mGenre = 4
             }
+            R.id.nav_favorite -> {
+                mToolbar.title = "お気に入り一覧"
+            }
         }
 
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -226,3 +230,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 }
+
+// // これでいけそうなんだけどうまくいかない
+//
+// // ログイン済みのユーザーを取得する
+// val user = FirebaseAuth.getInstance().currentUser
+//
+// // お気に入り一覧メニューの表示/非表示
+// val navigationView = findViewById<NavigationView>(R.id.nav_view)
+//
+// if (user == null) {
+//     navigationView.menu.findItem(R.id.nav_favorite).isVisible = false
+// }

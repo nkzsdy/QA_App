@@ -1,6 +1,7 @@
 package jp.techacademy.ryota.qa_app
 
 import android.content.Context
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -21,49 +22,57 @@ class SettingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
 
-        // Preferencesから表示名を取得してEditTextに反映させる
-        val sp = PreferenceManager.getDefaultSharedPreferences(this)
-        val name = sp.getString(NameKEY, "")
-        nameText.setText(name)
+        val user = FirebaseAuth.getInstance().currentUser
 
-        mDatabaseReference = FirebaseDatabase.getInstance().reference
+        // 未ログインならログイン画面に遷移
+        if (user == null) {
+            val intent = Intent(applicationContext, LoginActivity::class.java)
+            startActivity(intent)
+        } else {
+            // Preferencesから表示名を取得してEditTextに反映させる
+            val sp = PreferenceManager.getDefaultSharedPreferences(this)
+            val name = sp.getString(NameKEY, "")
+            nameText.setText(name)
 
-        // UIの初期設定
-        title = "設定"
+            mDatabaseReference = FirebaseDatabase.getInstance().reference
 
-        changeButton.setOnClickListener { v ->
-            // キーボードが出ていたら閉じる
-            val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            im.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            // UIの初期設定
+            title = "設定"
 
-            // ログイン済みのユーザーを取得する
-            val user = FirebaseAuth.getInstance().currentUser
+            changeButton.setOnClickListener { v ->
+                // キーボードが出ていたら閉じる
+                val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                im.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
 
-            if (user == null) {
-                // ログインしていない場合は何もしない
-                Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG).show()
-            } else {
-                // 変更した表示名をFirebaseに保存する
-                val name = nameText.text.toString()
-                val userRef = mDatabaseReference.child(UsersPATH).child(user.uid)
-                val data = HashMap<String, String>()
-                data["name"] = name
-                userRef.setValue(data)
+                // ログイン済みのユーザーを取得する
+                val user = FirebaseAuth.getInstance().currentUser
 
-                // 変更した表示名をPreferenceに保存する
-                val sp = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                val editor = sp.edit()
-                editor.putString(NameKEY, name)
-                editor.commit()
+                if (user == null) {
+                    // ログインしていない場合は何もしない
+                    Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG).show()
+                } else {
+                    // 変更した表示名をFirebaseに保存する
+                    val name = nameText.text.toString()
+                    val userRef = mDatabaseReference.child(UsersPATH).child(user.uid)
+                    val data = HashMap<String, String>()
+                    data["name"] = name
+                    userRef.setValue(data)
 
-                Snackbar.make(v, "表示名を変更しました", Snackbar.LENGTH_LONG).show()
+                    // 変更した表示名をPreferenceに保存する
+                    val sp = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                    val editor = sp.edit()
+                    editor.putString(NameKEY, name)
+                    editor.commit()
+
+                    Snackbar.make(v, "表示名を変更しました", Snackbar.LENGTH_LONG).show()
+                }
             }
-        }
 
-        logoutButton.setOnClickListener { v ->
-            FirebaseAuth.getInstance().signOut()
-            nameText.setText("")
-            Snackbar.make(v, "ログアウトしました", Snackbar.LENGTH_LONG).show()
+            logoutButton.setOnClickListener { v ->
+                FirebaseAuth.getInstance().signOut()
+                nameText.setText("")
+                Snackbar.make(v, "ログアウトしました", Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 }

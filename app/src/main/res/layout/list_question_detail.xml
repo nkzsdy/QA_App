@@ -21,6 +21,16 @@
         android:layout_alignTop="@+id/imageView"
         android:layout_toEndOf="@+id/imageView" />
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/not_favorite"
+        android:id="@+id/favButton"
+        android:layout_alignBottom="@+id/imageView"
+        android:layout_toEndOf="@+id/imageView"
+        android:background="?android:attr/selectableItemBackground"
+        android:tint="@color/colorFavButton" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
