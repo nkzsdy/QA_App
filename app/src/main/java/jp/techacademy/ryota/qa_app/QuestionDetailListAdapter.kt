@@ -113,21 +113,22 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
             favoriteRef.child(mQuestion.questionUid).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val favoriteState = dataSnapshot.child("is_favorite").value
-                    val data = HashMap<String, Boolean>()
+                    val data = HashMap<String, String>()
 
-                    when (favoriteState) {
+                    when (favoriteState == "true") {
                         null, false -> {
                             favButton.setImageResource(R.drawable.not_favorite)
-                            data["is_favorite"] = true
+                            data["is_favorite"] = "true"
                         }
 
                         true -> {
                             favButton.setImageResource(R.drawable.favorite)
-                            data["is_favorite"] = false
+                            data["is_favorite"] = "false"
                         }
                     }
 
                     favButton.setOnClickListener {
+                        data["genre"] = mQuestion.genre.toString()
                         favoriteRef.child(mQuestion.questionUid).setValue(data)
                     }
                 }
