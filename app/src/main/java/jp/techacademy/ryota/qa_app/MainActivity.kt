@@ -191,9 +191,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val user = FirebaseAuth.getInstance().currentUser
         navigationView.menu.findItem(R.id.nav_favorite).isVisible = user != null
 
-        // 1:趣味を規定の選択とする
-        if (mGenre == 0) {
-            onNavigationItemSelected(navigationView.menu.getItem(0))
+        // 1:趣味を規定の選択とする, 5:お気に入りを選択しているときは再取得
+        when (mGenre) {
+            0 -> onNavigationItemSelected(navigationView.menu.getItem(0))
+            5 -> onNavigationItemSelected(navigationView.menu.getItem(4))
         }
     }
 

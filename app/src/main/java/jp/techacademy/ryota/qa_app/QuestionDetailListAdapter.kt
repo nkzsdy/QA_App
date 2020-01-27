@@ -110,32 +110,37 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
             val favoriteRef =
                 FirebaseDatabase.getInstance().reference.child(FavoritesPATH).child(user.uid)
 
-            favoriteRef.child(mQuestion.questionUid).addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val favoriteState = dataSnapshot.child("is_favorite").value
-                    val data = HashMap<String, String>()
+            favoriteRef.child(mQuestion.questionUid)
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val favoriteState = dataSnapshot.child("is_favorite").value
+                        val data = HashMap<String, Any>()
 
-                    when (favoriteState == "true") {
-                        null, false -> {
-                            favButton.setImageResource(R.drawable.not_favorite)
-                            data["is_favorite"] = "true"
+                        when (favoriteState == "true") {
+                            null, false -> {
+                                favButton.setImageResource(R.drawable.not_favorite)
+                                data["is_favorite"] = "true"
+                            }
+
+                            true -> {
+                                favButton.setImageResource(R.drawable.favorite)
+                                data["is_favorite"] = "false"
+                            }
                         }
 
-                        true -> {
-                            favButton.setImageResource(R.drawable.favorite)
-                            data["is_favorite"] = "false"
+                        favButton.setOnClickListener {
+                            if (mQuestion.genre != 5) {
+                                data["genre"] = mQuestion.genre.toString()
+                                favoriteRef.child(mQuestion.questionUid).setValue(data)
+                            } else {
+                                favoriteRef.child(mQuestion.questionUid).updateChildren(data)
+                            }
                         }
                     }
 
-                    favButton.setOnClickListener {
-                        data["genre"] = mQuestion.genre.toString()
-                        favoriteRef.child(mQuestion.questionUid).setValue(data)
+                    override fun onCancelled(dataSnapshot: DatabaseError) {
                     }
-                }
-
-                override fun onCancelled(dataSnapshot: DatabaseError) {
-                }
-            })
+                })
         }
     }
 }
